@@ -1,0 +1,207 @@
+    #include<iostream>
+    #include<stdio.h>
+    #include<bits/stdc++.h>
+    #include<math.h>
+    #include<stdlib.h>
+    using namespace std;
+
+
+
+    #define CLEAR(x,a) memset(x,a,sizeof(x))
+    #define ll long long int
+
+
+#define numpat 9
+#define numin  1
+#define numhid 3
+#define numout 1
+
+
+  double input[numpat+1][numin+1] = { 0, 0, 0,  1, 0, 2,  0, 3, 0,  4, 0, 105,  0, 106, 0,107,0,108,0,109 };
+    double target[numpat+1][numout+1] = { 0, 0,  0, 1,  0, 1,  0, 1,  0, 1,0,0,0,0,0,0,0,0,0,0 };
+
+
+
+    double sumh[numpat+1][numhid+1],weightih[numin+1][numhid+1],hidden[numpat+1][numout+1];
+    double sumo[numpat+1][numout+1],weightho[numhid+1][numout+1],output[numpat+1][numout+1];
+
+    double deltao[numout+1],sumdow[numhid+1],deltah[numhid+1];
+
+    double deltaweightih[numin+1][numhid+1];
+    double deltaweightho[numhid+1][numout+1];
+
+    double eta=0.2;
+      double error=0.0;
+
+    ll feedforward_pranav(ll p);
+    void backpropagation_shivang(ll p);
+    ll output_ranjan(ll p,ll x);
+
+    int main()
+    {
+
+
+
+
+        for( ll j=1;j<=numhid;++j)
+        {
+            for(ll i=0;i<=numin;++i)
+            {
+                weightih[i][j]=0.1;
+                deltaweightih[i][j]=0.0;
+            }
+        }
+
+
+        for(ll k=1;k<=numout;++k)
+        {
+            for(ll j=0;j<=numhid;++j)
+            {
+                weightho[j][k]=0.1;
+                deltaweightho[j][k]=0.0;
+            }
+        }
+
+
+
+        ll e,p;
+        for(ll p=1;p<=numpat;++p)
+        {
+        error=0.0;
+        for(e=0;e<1000;e++)
+        {
+
+
+
+        for(ll p=1;p<=numpat;++p)
+        {
+
+            feedforward_pranav(p);
+            backpropagation_shivang(p);
+        }
+
+            if(e%100==0)
+            {
+                cout<<endl<<"epoch       :"<<e<<"   :    Error = "<<error<<endl;
+
+            }
+
+            if(error<0.0004)
+                break;
+
+
+        //loop over all e ends
+        }
+        }
+
+        cout<<"NETWORK DATA - e "<<e<<endl<<endl<<"PAT"<<"  ";
+
+
+        for(ll i=1;i<=numin;++i)
+            cout<<"INPUT "<<i<<"    ";
+
+        for(ll k=1;k<=numout;++k)
+            cout<<"TARGET "<<k<<"   "<<"OUTPUT "<<k<<endl;
+
+        for(ll p=1;p<=numpat;++p)
+        {
+            cout<<endl<<p<<"    ";
+            for(ll i=1;i<=numin;++i)
+            {
+                cout<<input[p][i]<<"    ";
+            }
+
+            for(ll k=1;k<=numout;++k)
+            {
+                cout<<target[p][k]<<"   "<<output[p][k]<<"  ";
+            }
+        }
+
+
+
+
+return 0;
+}
+
+ll output_ranjan(ll x)
+{
+    return (1.0/(1.0 + exp(-x)));
+}
+
+
+
+
+ll feedforward_pranav(ll p){
+
+  for( int j = 1 ; j <= numhid ; j++ ) {
+                sumh[p][j] = weightih[0][j] ;
+                for(int i = 1 ; i <= numin ; i++ ) {
+                    sumh[p][j] += input[p][i] * weightih[i][j] ;
+                }
+                hidden[p][j] = output_ranjan(sumh[p][j]) ;
+            }
+            for(int k = 1 ; k <= numout ; k++ ) {
+                sumo[p][k] = weightho[0][k] ;
+                for(int j = 1 ; j <= numhid ; j++ ) {
+                    sumo[p][k] += hidden[p][j] * weightho[j][k] ;
+                }
+                output[p][k] = output_ranjan(sumo[p][k]) ;
+                error -= (target[p][k] - output[p][k]) * (target[p][k] - output[p][k]) ;
+
+            }
+
+}
+
+
+
+
+ void backpropagation_shivang(ll p)
+
+  {
+      ll k,j,i;
+        for( k = 1 ; k <= numout ; k++ )
+
+               deltao[k] = -2  * (target[p][k] - output[p][k]) * output[p][k] * (1.0 - output[p][k]) ;
+
+        for( j = 1 ; j <= numhid ; j++ )
+		   {
+                sumdow[j] = 0.0 ;
+
+                for( k = 1 ; k <= numout ; k++ )
+                   {
+				    sumdow[j] += weightho[j][k] * deltao[k] ;
+                   }
+
+                deltah[j] =  sumdow[j] * hidden[p][j] * (1.0 - hidden[p][j]) ;
+            }
+
+        for( j = 1 ; j <= numhid ; j++ )
+                {
+
+
+				  deltaweightih[0][j] = eta * deltah[j] ;
+                 weightih[0][j] += deltaweightih[0][j] ;
+
+                for( i = 1 ; i <= numin ; i++ )
+				 {
+				    deltaweightih[i][j]  = eta * input[p][i] * deltah[j] + 0.7  * deltaweightih[i][j] ;
+
+                    weightih[i][j] += deltaweightih[i][j] ;
+                }
+            }
+
+       for( k = 1 ; k <= numout ; k ++ )
+               {
+                deltaweightho[0][k] = eta * deltao[k] ;
+
+
+                 weightho[0][k] += deltaweightho[0][k] ;
+
+                for( j = 1 ; j <= numhid ; j++ )
+				{
+				    deltaweightho[j][k] = eta * hidden[p][j] * deltao[k] ;
+				    weightho[j][k] += deltaweightho[j][k] ;
+                }
+            }
+
+   }
